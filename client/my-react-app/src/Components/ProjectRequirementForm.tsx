@@ -21,9 +21,10 @@ const ProjectRequirementForm = () => {
     },
     project_details: {
       project_type: '',
-      have_url: '',
+      existing_url: '',        // input field
+      have_url: false,         // auto derived
       want_domain: false,
-      have_hoisting_service: false,
+      have_hosting_service: false,
       social_media: [],
       expected_deadline: '',
       web_search_keywords: [],
@@ -38,9 +39,9 @@ const ProjectRequirementForm = () => {
       have_official_theme: false,
       have_printed_materials: false,
     },
-    product_maintainance: {
-      who_will_maintain: 'you',
-      frequency_of_updates: 'monthly',
+    product_maintenance: {
+      who_will_maintain: "you",
+      frequency_of_updates: "monthly",
     },
     do_you_need_training_for_staff: false,
     additional_details: '',

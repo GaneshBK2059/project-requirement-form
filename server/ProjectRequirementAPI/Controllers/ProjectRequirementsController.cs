@@ -1,88 +1,106 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProjectRequirementAPI.Data;
 using ProjectRequirementAPI.Models;
 
 namespace ProjectRequirementAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/project-requirements")]
 public class ProjectRequirementsController : ControllerBase
 {
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<ProjectRequirementsController> _logger;
 
-    public ProjectRequirementsController(ILogger<ProjectRequirementsController> logger)
+    public ProjectRequirementsController(
+        ApplicationDbContext context,
+        ILogger<ProjectRequirementsController> logger)
     {
+        _context = context;
         _logger = logger;
     }
 
-    /// <summary>
-    /// Get all project requirements (placeholder - connect to database later)
-    /// </summary>
-    [HttpGet]
-    public ActionResult<IEnumerable<ProjectRequirementFormModel>> GetAll()
-    {
-        _logger.LogInformation("Getting all project requirements");
-        return Ok(new List<ProjectRequirementFormModel>());
-    }
-
-    /// <summary>
-    /// Get a specific project requirement by ID
-    /// </summary>
-    [HttpGet("{id}")]
-    public ActionResult<ProjectRequirementFormModel> GetById(int id)
-    {
-        _logger.LogInformation("Getting project requirement with ID: {Id}", id);
-        return Ok(new ProjectRequirementFormModel());
-    }
-
-    /// <summary>
-    /// Create a new project requirement form
-    /// </summary>
+    // ---------------- CREATE ----------------
     [HttpPost]
-    public ActionResult<ProjectRequirementFormModel> Create([FromBody] ProjectRequirementFormModel form)
+    public async Task<IActionResult> Create([FromBody] ProjectRequirementFormModel form)
     {
         if (form == null)
+            return BadRequest(new { message = "Request body is null" });
+
+        form.SysCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
+        form.SysUpdated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
+
+        _context.ProjectRequirementForms.Add(form);
+        await _context.SaveChangesAsync();
+
+        return Ok(new
         {
-            return BadRequest("Form cannot be null");
-        }
-
-        _logger.LogInformation(
-            "Creating new project requirement for organization: {Organization}",
-            form.basic_details?.organization_name);
-
-        // TODO: Save to database
-        // For now, return the same form with a success message
-
-        return CreatedAtAction(nameof(GetById), new { id = 1 }, form);
+            success = true,
+            message = "Project requirement created successfully",
+            data = form
+        });
     }
 
-    /// <summary>
-    /// Update an existing project requirement form
-    /// </summary>
-    [HttpPut("{id}")]
-    public ActionResult<ProjectRequirementFormModel> Update(int id, [FromBody] ProjectRequirementFormModel form)
+    // ---------------- GET ALL ----------------
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
     {
-        if (form == null)
-        {
-            return BadRequest("Form cannot be null");
-        }
+        var data = await _context.ProjectRequirementForms
+            .OrderByDescending(x => x.Id)
+            .ToListAsync();
 
-        _logger.LogInformation("Updating project requirement with ID: {Id}", id);
-
-        // TODO: Update in database
-
-        return Ok(form);
+        return Ok(data);
     }
 
-    /// <summary>
-    /// Delete a project requirement form
-    /// </summary>
-    [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    // ---------------- GET BY ID ----------------
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
     {
-        _logger.LogInformation("Deleting project requirement with ID: {Id}", id);
+        var data = await _context.ProjectRequirementForms.FindAsync(id);
 
-        // TODO: Delete from database
+        if (data == null)
+            return NotFound($"Project requirement with id {id} not found");
+
+        return Ok(data);
+    }
+
+    // ---------------- UPDATE ----------------
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, [FromBody] ProjectRequirementFormModel form)
+    {
+        if (id != form.Id)
+            return BadRequest("ID mismatch");
+
+        var existing = await _context.ProjectRequirementForms.FindAsync(id);
+        if (existing == null)
+            return NotFound();
+
+        // Update fields
+        existing.basic_details = form.basic_details;
+        existing.project_details = form.project_details;
+        existing.design_preferences = form.design_preferences;
+        existing.product_maintenance = form.product_maintenance;
+        existing.DoYouNeedTrainingForStaff = form.DoYouNeedTrainingForStaff;
+        existing.AdditionalDetails = form.AdditionalDetails;
+        existing.SysUpdated = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(existing);
+    }
+
+    // ---------------- DELETE ----------------
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var data = await _context.ProjectRequirementForms.FindAsync(id);
+
+        if (data == null)
+            return NotFound();
+
+        _context.ProjectRequirementForms.Remove(data);
+        await _context.SaveChangesAsync();
+
         return NoContent();
     }
 }
-

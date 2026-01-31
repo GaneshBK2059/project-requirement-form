@@ -9,31 +9,38 @@ export type projectRequirementForm = {
     mobile_no: string;
   };
   project_details: {
-    project_type: string; // website/ERP/Application
-    have_url: string;
+    project_type: string;
+
+    existing_url: string;        // ✅ URL input field
+    have_url: boolean;           // ✅ derived (auto)
+
     want_domain: boolean;
-    have_hoisting_service: boolean;
-    social_media: string[]; // comma separated list of social media links
+    have_hosting_service: boolean;
+
+    social_media: string[];
     expected_deadline: string;
-    web_search_keywords: string[]; // text format
-    project_description: string; // what makes your product unique [ product name and services if applicable]
+    web_search_keywords: string[];
+    project_description: string;
     what_should_project_include: string[];
-    selected_project_features: string[]; // array of selected features
+    selected_project_features: string[];
+
     resources: {
       resource_key: ResourceKey;
-      provider: resourceProvider;
+      provider: ResourceProviderUI;
     }[];
-  };
+};
+
   design_preferences: {
     have_official_color: boolean,
     have_official_font: boolean,
     have_official_theme: boolean,
     have_printed_materials: boolean, // cards or brochures
   },
-  product_maintainance: {
-    who_will_maintain: resourceProvider;
-    frequency_of_updates: FrequencyOfUpdates | string; // monthly/quarterly/bi-annually/annually
-  },
+  product_maintenance: {
+  who_will_maintain: ResourceProviderUI;
+  frequency_of_updates: frequencyOfUpdatesUI;
+};
+
   do_you_need_training_for_staff: boolean,
   additional_details: string;
 };
@@ -47,9 +54,32 @@ export type ResourceKey =
   | "Description"
   | "professional_logo"
   | "graphic_designs"
-  | "metatags/descriptin"
+  | "metatags/description"
   | "other_print_collateral"
   | "translation_costs";
-export type resourceProvider = "you" | "us" | "third_party";
+  
+export type ResourceProviderUI = "you" | "us" | "thirdparty";
 
-export type FrequencyOfUpdates = "Daily" | "Weekly" | "Monthly" | "Quarterly" | "Bi-Annually" | "Annually" ;; 
+
+export type frequencyOfUpdatesUI =
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "quarterly"
+  | "bi-annually"
+  | "annually";
+
+export const ProviderApiMap = {
+  you: 0,
+  us: 1,
+  thirdparty: 2,
+} as const;
+
+export const FrequencyApiMap = {
+  daily: 0,
+  weekly: 1,
+  monthly: 2,
+  quarterly: 3,
+  "bi-annually": 4,
+  annually: 5,
+} as const;

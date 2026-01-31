@@ -1,5 +1,6 @@
 import type { projectRequirementForm } from "../Types/ProjectRequirementForm";
 import "../styles/ProjectDetails.css";
+import type { ResourceKey } from "../Types/ProjectRequirementForm";
 
 const FEATURE_OPTIONS = [
   { id: 1, label: "Social Network Integration" },
@@ -39,16 +40,17 @@ const SPECIFIC_FEATURES_OPTIONS = [
   { id: 16, label: "Employee Management" },
 ];
 
-const RESOURCE_OPTIONS = [
+const RESOURCE_OPTIONS: { id: ResourceKey; label: string }[] = [
   { id: "photo_video", label: "Photos & Videos" },
   { id: "Quotes_content", label: "Quotes/Content" },
   { id: "Description", label: "Product Description" },
   { id: "professional_logo", label: "Professional Logo" },
   { id: "graphic_designs", label: "Graphic Designs" },
-  { id: "metatags/descriptin", label: "Meta Tags/Description" },
+  { id: "metatags/description", label: "Meta Tags/Description" },
   { id: "other_print_collateral", label: "Other Print Collateral" },
   { id: "translation_costs", label: "Translation Costs" },
 ];
+
 
 type Props = {
   formData: projectRequirementForm;
@@ -56,9 +58,11 @@ type Props = {
 };
 
 const ProjectDetails = ({ formData, setFormData }: Props) => {
-  const updateField = (
-    field: keyof projectRequirementForm["project_details"],
-    value: string | boolean | string[] | { resource_key: string; provider: string }[],
+    const updateField = <
+    K extends keyof projectRequirementForm["project_details"]
+  >(
+    field: K,
+    value: projectRequirementForm["project_details"][K]
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -107,12 +111,23 @@ const ProjectDetails = ({ formData, setFormData }: Props) => {
         <div className="form-group">
           <label htmlFor="have-url">Do you have a URL in your mind? *</label>
           <input
-            id="have-url"
-            placeholder="Enter URL (if any)"
-            value={formData.project_details.have_url}
-            onChange={(e) => updateField("have_url", e.target.value)}
-            className="form-input"
-          />
+          id="existing-url"
+          placeholder="Enter URL (if any)"
+          value={formData.project_details.existing_url}
+          onChange={(e) => {
+            const url = e.target.value;
+
+            setFormData((prev) => ({
+              ...prev,
+              project_details: {
+                ...prev.project_details,
+                existing_url: url,
+                have_url: url.trim().length > 0, // ✅ auto boolean
+              },
+            }));
+          }}
+          className="form-input"
+        />
         </div>
 
         <div className="form-group checkbox-group">
@@ -130,9 +145,9 @@ const ProjectDetails = ({ formData, setFormData }: Props) => {
           <label>
             <input
               type="checkbox"
-              checked={formData.project_details.have_hoisting_service}
+              checked={formData.project_details.have_hosting_service}
               onChange={(e) =>
-                updateField("have_hoisting_service", e.target.checked)
+                updateField("have_hosting_service", e.target.checked)
               }
             />
             Do you have a hosting service?
@@ -338,23 +353,23 @@ const ProjectDetails = ({ formData, setFormData }: Props) => {
                       id={`resource-${resource.id}`}
                       checked={!!existingResource}
                       onChange={(e) => {
-                        if (e.target.checked) {
-                          updateField("resources", [
-                            ...formData.project_details.resources,
-                            {
-                              resource_key: resource.id,
-                              provider: "you",
-                            },
-                          ]);
-                        } else {
-                          updateField(
-                            "resources",
-                            formData.project_details.resources.filter(
-                              (r) => r.resource_key !== resource.id,
-                            ),
-                          );
-                        }
-                      }}
+                      if (e.target.checked) {
+                        updateField("resources", [
+                          ...formData.project_details.resources,
+                          {
+                            resource_key: resource.id,
+                            provider: "you",
+                          },
+                        ]);
+                      } else {
+                        updateField(
+                          "resources",
+                          formData.project_details.resources.filter(
+                            (r) => r.resource_key !== resource.id
+                          )
+                        );
+                      }
+                    }}
                     />
                     <label
                       htmlFor={`resource-${resource.id}`}

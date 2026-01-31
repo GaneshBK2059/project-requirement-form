@@ -1,12 +1,22 @@
+using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
+using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Add Database Context
+builder.Services.AddDbContext<ProjectRequirementAPI.Data.ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         // Configure JSON serialization to handle snake_case from frontend
         options.JsonSerializerOptions.PropertyNamingPolicy = null; // Keep property names as-is
         options.JsonSerializerOptions.WriteIndented = true;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -42,11 +52,6 @@ else
 
 // ✅ CORS MUST come BEFORE HttpsRedirection
 app.UseCors("AllowReactApp");
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
 app.UseAuthentication();
 app.UseAuthorization();

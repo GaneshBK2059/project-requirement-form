@@ -1,57 +1,74 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace ProjectRequirementAPI.Models;
 
 public class ProjectRequirementFormModel
 {
-    public BasicDetails? basic_details { get; set; }
-    public ProjectDetails? project_details { get; set; }
-    public DesignPreferences? design_preferences { get; set; }
-    public ProductMaintenance? product_maintainance { get; set; }
-    public bool do_you_need_training_for_staff { get; set; }
-    public string? additional_details { get; set; }
-}
+    [Key]
+    public int Id { get; set; }
 
-public class BasicDetails
-{
-    public string? organization_name { get; set; }
-    public string? address { get; set; }
-    public string? phone_number { get; set; }
-    public string? email { get; set; }
-    public string? designation { get; set; }
-    public string? contact_person_name { get; set; }
-    public string? mobile_no { get; set; }
-}
+    // DB columns (ONE table)
+    public string? BasicDetailsJson { get; set; }
+    public string? ProjectDetailsJson { get; set; }
+    public string? DesignPreferencesJson { get; set; }
+    public string? ProductMaintenanceJson { get; set; }
 
-public class ProjectDetails
-{
-    public string? project_type { get; set; } // website/ERP/Application
-    public string? have_url { get; set; }
-    public bool want_domain { get; set; }
-    public bool have_hoisting_service { get; set; }
-    public List<string>? social_media { get; set; }
-    public string? expected_deadline { get; set; }
-    public List<string>? web_search_keywords { get; set; }
-    public string? project_description { get; set; }
-    public List<string>? what_should_project_include { get; set; }
-    public List<string>? selected_project_features { get; set; }
-    public List<Resource>? resources { get; set; }
-}
+    [JsonPropertyName("do_you_need_training_for_staff")]
+    public bool DoYouNeedTrainingForStaff { get; set; }
+    [JsonPropertyName("additional_details")]
+    public string? AdditionalDetails { get; set; }
 
-public class Resource
-{
-    public string? resource_key { get; set; }
-    public string? provider { get; set; } // "you" or "us" or "third_party"
-}
+   [JsonPropertyName("sys_created")]
+    public DateTime SysCreated { get; set; }
 
-public class DesignPreferences
-{
-    public bool have_official_color { get; set; }
-    public bool have_official_font { get; set; }
-    public bool have_official_theme { get; set; }
-    public bool have_printed_materials { get; set; }
-}
+    [JsonPropertyName("sys_updated")]
+    public DateTime? SysUpdated { get; set; }
 
-public class ProductMaintenance
-{
-    public string? who_will_maintain { get; set; } // "you" or "us" or "third_party"
-    public string? frequency_of_updates { get; set; } // Daily/Weekly/Monthly/Quarterly/Bi-Annually/Annually
+
+    // ----------------- NOT MAPPED -----------------
+
+    [NotMapped]
+    public BasicDetails? basic_details
+    {
+        get => Deserialize<BasicDetails>(BasicDetailsJson);
+        set => BasicDetailsJson = Serialize(value);
+    }
+
+    [NotMapped]
+    public ProjectDetails? project_details
+    {
+        get => Deserialize<ProjectDetails>(ProjectDetailsJson);
+        set => ProjectDetailsJson = Serialize(value);
+    }
+
+    [NotMapped]
+    public DesignPreferences? design_preferences
+    {
+        get => Deserialize<DesignPreferences>(DesignPreferencesJson);
+        set => DesignPreferencesJson = Serialize(value);
+    }
+
+    [NotMapped]
+    [JsonPropertyName("product_maintenance")]
+    public ProductMaintenance? product_maintenance
+    {
+        get => Deserialize<ProductMaintenance>(ProductMaintenanceJson);
+        set => ProductMaintenanceJson = Serialize(value);
+    }
+
+    // Helpers
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
+    private static string? Serialize<T>(T? data)
+        => data == null ? null : JsonSerializer.Serialize(data, _jsonOptions);
+
+    private static T? Deserialize<T>(string? json)
+        => string.IsNullOrWhiteSpace(json) ? default : JsonSerializer.Deserialize<T>(json, _jsonOptions);
 }

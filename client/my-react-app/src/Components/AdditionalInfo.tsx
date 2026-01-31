@@ -18,7 +18,7 @@ const AdditionalInfo = ({ formData, setFormData }: Props) => {
     setFormData((prev) => ({
       ...prev,
       product_maintainance: {
-        ...prev.product_maintainance,
+        ...prev.product_maintenance,
         [field]: value,
       },
     }));
@@ -37,7 +37,7 @@ const AdditionalInfo = ({ formData, setFormData }: Props) => {
           <label htmlFor="maintain-by">Who will maintain the product? *</label>
           <select
             id="maintain-by"
-            value={formData.product_maintainance.who_will_maintain}
+            value={formData.product_maintenance.who_will_maintain}
             onChange={(e) => updateMaintenanceField("who_will_maintain", e.target.value)}
             className="form-input"
           >
@@ -51,7 +51,7 @@ const AdditionalInfo = ({ formData, setFormData }: Props) => {
           <label htmlFor="update-frequency">Frequency of Updates *</label>
           <select
             id="update-frequency"
-            value={formData.product_maintainance.frequency_of_updates}
+            value={formData.product_maintenance.frequency_of_updates}
             onChange={(e) =>
               updateMaintenanceField("frequency_of_updates", e.target.value)
             }

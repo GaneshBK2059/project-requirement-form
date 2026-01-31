@@ -91,7 +91,7 @@ export function validateStep4(data: projectRequirementForm): ValidationErrors {
   const errors: string[] = [];
 
   // Step 4 validation
-  if (!data.product_maintainance) {
+  if (!data.product_maintenance) {
     errors.push("Product maintenance info is required");
   }
 
